@@ -41,6 +41,82 @@
       touch-action: manipulation;
     }
     
+    .watermark {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.1),
+        rgba(255, 255, 255, 0.1) 10px,
+        transparent 10px,
+        transparent 20px
+      );
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      pointer-events: none;
+      z-index: 9998;
+      display: none;
+    }
+    
+    .watermark.active {
+      display: flex;
+    }
+    
+    .screenshot-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 1.2rem;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .screenshot-overlay.show {
+      display: flex;
+    }
+    
+    .screenshot-overlay input {
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: none;
+      outline: none;
+      width: 200px;
+      text-align: center;
+    }
+    
+    .screenshot-overlay button {
+      padding: 10px 20px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.3s;
+    }
+    
+    .screenshot-overlay button:hover {
+      background: var(--accent);
+    }
+    
     .container {
       max-width: 1200px;
       margin: 0 auto;
@@ -867,7 +943,6 @@
       100% { transform: translateY(0); opacity: 0.8; }
     }
     
-    /* Enhanced Mobile Responsiveness */
     @media (max-width: 768px) {
       html, body {
         overflow-x: hidden;
@@ -1100,6 +1175,23 @@
       .emoji {
         font-size: 1.8rem;
       }
+      
+      .watermark {
+        font-size: 1.5rem;
+      }
+      
+      .screenshot-overlay {
+        font-size: 1rem;
+      }
+      
+      .screenshot-overlay input {
+        width: 180px;
+        padding: 8px;
+      }
+      
+      .screenshot-overlay button {
+        padding: 8px 15px;
+      }
     }
     
     @media (max-width: 480px) {
@@ -1187,10 +1279,34 @@
       .surprise-message h3 {
         font-size: 1.4rem;
       }
+      
+      .watermark {
+        font-size: 1rem;
+      }
+      
+      .screenshot-overlay {
+        font-size: 0.9rem;
+      }
+      
+      .screenshot-overlay input {
+        width: 160px;
+        padding: 6px;
+      }
+      
+      .screenshot-overlay button {
+        padding: 6px 12px;
+      }
     }
   </style>
 </head>
 <body>
+  <div id="watermark" class="watermark">Protected Content - Screenshots Disabled</div>
+  <div id="screenshotOverlay" class="screenshot-overlay">
+    <p>Screenshots are disabled. Enter the password to enable.</p>
+    <input type="password" id="screenshotPassword" placeholder="Enter password">
+    <button onclick="verifyPassword()">Submit</button>
+  </div>
+  
   <audio id="birthdayMusic" loop>
     <source src="bi.mp3" type="audio/mpeg">
   </audio>
@@ -1430,11 +1546,39 @@
   <script>
     // Screenshot Protection
     let isScreenshotAllowed = false;
+    const watermark = document.getElementById('watermark');
+    const screenshotOverlay = document.getElementById('screenshotOverlay');
+    
+    function showScreenshotOverlay() {
+      if (!isScreenshotAllowed) {
+        watermark.classList.add('active');
+        screenshotOverlay.classList.add('show');
+        document.body.style.pointerEvents = 'none'; // Disable interactions
+      }
+    }
+    
+    function hideScreenshotOverlay() {
+      watermark.classList.remove('active');
+      screenshotOverlay.classList.remove('show');
+      document.body.style.pointerEvents = 'auto'; // Re-enable interactions
+    }
+    
+    function verifyPassword() {
+      const passwordInput = document.getElementById('screenshotPassword');
+      if (passwordInput.value === 'sadi123') {
+        isScreenshotAllowed = true;
+        hideScreenshotOverlay();
+        alert('Screenshots are now allowed!');
+      } else {
+        alert('Incorrect password. Screenshots remain disabled.');
+        passwordInput.value = '';
+      }
+    }
     
     // Disable right-click
     document.addEventListener('contextmenu', function(e) {
       e.preventDefault();
-      promptForPassword();
+      showScreenshotOverlay();
     });
     
     // Disable common screenshot and developer tools shortcuts
@@ -1448,15 +1592,15 @@
       ) {
         e.preventDefault();
         e.stopPropagation();
-        promptForPassword();
+        showScreenshotOverlay();
       }
-    });
+    }, { capture: true });
     
     // Attempt to block mobile screenshot gestures
     document.addEventListener('touchstart', function(e) {
       if (e.touches.length > 1 && !isScreenshotAllowed) {
         e.preventDefault();
-        promptForPassword();
+        showScreenshotOverlay();
       }
     }, { passive: false });
     
@@ -1464,22 +1608,25 @@
     document.addEventListener('keyup', function(e) {
       if (e.key === 'PrintScreen' && !isScreenshotAllowed) {
         navigator.clipboard.writeText('').then(() => {
-          promptForPassword();
+          showScreenshotOverlay();
         });
       }
     });
     
-    function promptForPassword() {
-      if (!isScreenshotAllowed) {
-        const password = prompt("Please enter the password to allow screenshots:", "");
-        if (password === "sadi123") {
-          isScreenshotAllowed = true;
-          alert("Screenshots are now allowed!");
-        } else {
-          alert("Incorrect password. Screenshots are disabled.");
-        }
+    // Detect visibility change (e.g., switching to screenshot tool)
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden && !isScreenshotAllowed) {
+        setTimeout(showScreenshotOverlay, 100);
       }
-    }
+    });
+    
+    // Prevent copy-paste
+    document.addEventListener('copy', function(e) {
+      if (!isScreenshotAllowed) {
+        e.preventDefault();
+        showScreenshotOverlay();
+      }
+    });
     
     // Audio Management
     const audio = document.getElementById('birthdayMusic');
@@ -1579,7 +1726,7 @@
       
       function openGift() {
         if (!isScreenshotAllowed) {
-          promptForPassword();
+          showScreenshotOverlay();
           return;
         }
         popup.style.display = "flex";
@@ -1611,7 +1758,7 @@
     // Gallery Modal
     function openModal(src) {
       if (!isScreenshotAllowed) {
-        promptForPassword();
+        showScreenshotOverlay();
         return;
       }
       const modal = document.getElementById('imageModal');
@@ -1745,6 +1892,13 @@
     }
     
     addContinuousDecorations();
+    
+    // Allow password input via Enter key
+    document.getElementById('screenshotPassword').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        verifyPassword();
+      }
+    });
   </script>
 </body>
 </html>
