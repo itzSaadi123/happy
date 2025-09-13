@@ -40,7 +40,7 @@
     }
     
     .password-overlay {
-      display: none; /* Hidden by default */
+      display: none;
       position: fixed;
       top: 0;
       left: 0;
@@ -87,6 +87,15 @@
       color: red;
       margin-top: 10px;
       display: none;
+    }
+    
+    .blur-content {
+      transition: filter 0.3s;
+    }
+    
+    .blur-content.active {
+      filter: blur(10px);
+      pointer-events: none;
     }
     
     .container {
@@ -916,17 +925,17 @@
     <source src="bi.mp3" type="audio/mpeg">
   </audio>
   
-  <div class="decoration balloon" style="background: var(--primary); top: 10%; left: 5%;"></div>
-  <div class="decoration balloon" style="background: var(--pastel-blue); top: 15%; right: 7%; animation-delay: 1s;"></div>
-  <div class="decoration balloon" style="background: var(--pastel-yellow); top: 25%; left: 10%; animation-delay: 2s;"></div>
-  <div class="decoration balloon" style="background: var(--pastel-green); top: 30%; right: 15%; animation-delay: 1.5s;"></div>
-  
-  <div class="decoration star" style="top: 20%; left: 15%; font-size: 1.5rem; animation-delay: 0.5s;">✨</div>
-  <div class="decoration star" style="top: 15%; right: 20%; font-size: 1.8rem; animation-delay: 1.2s;">⭐</div>
-  <div class="decoration star" style="top: 40%; left: 25%; font-size: 1.3rem; animation-delay: 0.8s;">✨</div>
-  <div class="decoration star" style="top: 35%; right: 30%; font-size: 1.6rem; animation-delay: 1.5s;">⭐</div>
-  
-  <div class="container">
+  <div class="container blur-content" id="mainContent">
+    <div class="decoration balloon" style="background: var(--primary); top: 10%; left: 5%;"></div>
+    <div class="decoration balloon" style="background: var(--pastel-blue); top: 15%; right: 7%; animation-delay: 1s;"></div>
+    <div class="decoration balloon" style="background: var(--pastel-yellow); top: 25%; left: 10%; animation-delay: 2s;"></div>
+    <div class="decoration balloon" style="background: var(--pastel-green); top: 30%; right: 15%; animation-delay: 1.5s;"></div>
+    
+    <div class="decoration star" style="top: 20%; left: 15%; font-size: 1.5rem; animation-delay: 0.5s;">✨</div>
+    <div class="decoration star" style="top: 15%; right: 20%; font-size: 1.8rem; animation-delay: 1.2s;">⭐</div>
+    <div class="decoration star" style="top: 40%; left: 25%; font-size: 1.3rem; animation-delay: 0.8s;">✨</div>
+    <div class="decoration star" style="top: 35%; right: 30%; font-size: 1.6rem; animation-delay: 1.5s;">⭐</div>
+    
     <header>
       <h1>Happy Birthday Muskan! 🎉</h1>
       <p style="font-size: clamp(1.2rem, 2vw, 1.5rem); color: var(--dark); font-weight: bold;">May your special day be as wonderful as you are!</p>
@@ -1112,6 +1121,7 @@
     
     function showPasswordPrompt() {
       document.getElementById('passwordOverlay').style.display = 'flex';
+      document.getElementById('mainContent').classList.add('active');
       document.getElementById('passwordInput').focus();
     }
     
@@ -1121,7 +1131,9 @@
       if (password === 'sadi123') {
         canScreenshot = true;
         document.getElementById('passwordOverlay').style.display = 'none';
+        document.getElementById('mainContent').classList.remove('active');
         document.getElementById('passwordInput').value = '';
+        errorMessage.style.display = 'none';
       } else {
         errorMessage.style.display = 'block';
         document.getElementById('passwordInput').value = '';
@@ -1130,18 +1142,54 @@
     
     // Handle keyboard screenshot attempts
     document.addEventListener('keydown', function(e) {
-      if (!canScreenshot && (e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'p') || 
-          (e.metaKey && e.key === 'p') || (e.metaKey && e.altKey && e.key === 's'))) {
+      if (!canScreenshot && (
+          e.key === 'PrintScreen' ||
+          (e.ctrlKey && e.key === 'p') ||
+          (e.metaKey && e.key === 'p') ||
+          (e.metaKey && e.altKey && e.key === 's') ||
+          (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4')) ||
+          (e.key === 's' && (e.ctrlKey || e.metaKey))
+      )) {
         e.preventDefault();
         showPasswordPrompt();
+        alert('Please enter the password to take a screenshot!');
       }
     });
     
-    // Handle right-click attempts (context menu)
+    // Handle right-click attempts
     document.addEventListener('contextmenu', function(e) {
       if (!canScreenshot) {
         e.preventDefault();
         showPasswordPrompt();
+        alert('Please enter the password to take a screenshot!');
+      }
+    });
+    
+    // Handle touch events for mobile screenshots
+    document.addEventListener('touchstart', function(e) {
+      if (!canScreenshot && e.touches.length > 1) {
+        e.preventDefault();
+        showPasswordPrompt();
+        alert('Please enter the password to take a screenshot!');
+      }
+    }, { passive: false });
+    
+    // Handle clipboard copying
+    document.addEventListener('copy', function(e) {
+      if (!canScreenshot) {
+        e.preventDefault();
+        showPasswordPrompt();
+        alert('Copying is disabled until the correct password is entered!');
+      }
+    });
+    
+    // Handle closing password prompt by clicking outside
+    document.getElementById('passwordOverlay').addEventListener('click', function(e) {
+      if (e.target === this) {
+        this.style.display = 'none';
+        document.getElementById('mainContent').classList.remove('active');
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('errorMessage').style.display = 'none';
       }
     });
     
@@ -1266,17 +1314,11 @@
     window.onclick = function(event) {
       const modal = document.getElementById('imageModal');
       const giftModal = document.getElementById('giftModal');
-      const passwordOverlay = document.getElementById('passwordOverlay');
       if (event.target == modal) {
         closeModal();
       }
       if (event.target == giftModal) {
         closeGiftModal();
-      }
-      if (event.target == passwordOverlay) {
-        document.getElementById('passwordOverlay').style.display = 'none';
-        document.getElementById('passwordInput').value = '';
-        document.getElementById('errorMessage').style.display = 'none';
       }
     }
     
@@ -1371,10 +1413,12 @@
       }, 3000);
     }
     
-    addContinuousDecorations();
-    
     document.querySelectorAll('.gallery-item img').forEach(img => {
       img.addEventListener('click', () => openModal(img.src));
+    });
+    
+    window.addEventListener('load', function() {
+      addContinuousDecorations();
     });
   </script>
 </body>
