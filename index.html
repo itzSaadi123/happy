@@ -29,16 +29,17 @@
       -ms-user-select: none;
       user-select: none;
       -webkit-touch-callout: none;
+      -webkit-user-drag: none;
     }
     
     body {
       font-family: 'Poppins', sans-serif;
       background: linear-gradient(135deg, var(--light) 0%, var(--pastel-blue) 50%, var(--secondary) 100%);
       color: var(--dark);
-      overflow-x: hidden;
+      overflow: hidden;
       min-height: 100vh;
       position: relative;
-      touch-action: manipulation;
+      touch-action: none;
     }
     
     .watermark {
@@ -49,28 +50,22 @@
       height: 100%;
       background: repeating-linear-gradient(
         45deg,
-        rgba(255, 255, 255, 0.1),
-        rgba(255, 255, 255, 0.1) 10px,
+        rgba(255, 255, 255, 0.3),
+        rgba(255, 255, 255, 0.3) 10px,
         transparent 10px,
         transparent 20px
       );
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 2rem;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 2.5rem;
       display: flex;
       justify-content: center;
       align-items: center;
       text-align: center;
       pointer-events: none;
       z-index: 9998;
-      display: none;
-    }
-    
-    .watermark.active {
-      display: flex;
     }
     
     .screenshot-overlay {
-      display: none;
       position: fixed;
       top: 0;
       left: 0;
@@ -78,6 +73,7 @@
       height: 100%;
       background: rgba(0, 0, 0, 0.95);
       z-index: 9999;
+      display: flex;
       justify-content: center;
       align-items: center;
       color: white;
@@ -86,10 +82,6 @@
       backdrop-filter: blur(10px);
       flex-direction: column;
       gap: 15px;
-    }
-    
-    .screenshot-overlay.show {
-      display: flex;
     }
     
     .screenshot-overlay input {
@@ -945,7 +937,7 @@
     
     @media (max-width: 768px) {
       html, body {
-        overflow-x: hidden;
+        overflow: hidden;
         width: 100%;
       }
       
@@ -1549,18 +1541,25 @@
     const watermark = document.getElementById('watermark');
     const screenshotOverlay = document.getElementById('screenshotOverlay');
     
+    // Show overlay and watermark on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      watermark.classList.add('active');
+      screenshotOverlay.style.display = 'flex';
+      document.body.style.pointerEvents = 'none';
+    });
+    
     function showScreenshotOverlay() {
       if (!isScreenshotAllowed) {
         watermark.classList.add('active');
-        screenshotOverlay.classList.add('show');
-        document.body.style.pointerEvents = 'none'; // Disable interactions
+        screenshotOverlay.style.display = 'flex';
+        document.body.style.pointerEvents = 'none';
       }
     }
     
     function hideScreenshotOverlay() {
       watermark.classList.remove('active');
-      screenshotOverlay.classList.remove('show');
-      document.body.style.pointerEvents = 'auto'; // Re-enable interactions
+      screenshotOverlay.style.display = 'none';
+      document.body.style.pointerEvents = 'auto';
     }
     
     function verifyPassword() {
@@ -1578,17 +1577,20 @@
     // Disable right-click
     document.addEventListener('contextmenu', function(e) {
       e.preventDefault();
+      e.stopPropagation();
       showScreenshotOverlay();
-    });
+    }, { capture: true });
     
     // Disable common screenshot and developer tools shortcuts
     document.addEventListener('keydown', function(e) {
-      // Block Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+Shift+J, Ctrl+P, PrintScreen, Cmd+Shift+3/4 (Mac)
+      // Block Ctrl+Shift+I/C/J, Ctrl+P, PrintScreen, Alt+PrintScreen, Cmd+Shift+3/4, Cmd+T
       if (
         (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J')) ||
         (e.ctrlKey && e.key === 'p') ||
         e.key === 'PrintScreen' ||
-        (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4'))
+        (e.altKey && e.key === 'PrintScreen') ||
+        (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4')) ||
+        (e.metaKey && e.key === 't')
       ) {
         e.preventDefault();
         e.stopPropagation();
@@ -1596,37 +1598,53 @@
       }
     }, { capture: true });
     
-    // Attempt to block mobile screenshot gestures
+    // Block mobile screenshot gestures
     document.addEventListener('touchstart', function(e) {
       if (e.touches.length > 1 && !isScreenshotAllowed) {
         e.preventDefault();
+        e.stopPropagation();
         showScreenshotOverlay();
       }
     }, { passive: false });
     
-    // Block browser's screenshot tools
+    // Clear clipboard on PrintScreen
     document.addEventListener('keyup', function(e) {
       if (e.key === 'PrintScreen' && !isScreenshotAllowed) {
+        e.preventDefault();
         navigator.clipboard.writeText('').then(() => {
+          showScreenshotOverlay();
+        }).catch(() => {
           showScreenshotOverlay();
         });
       }
-    });
+    }, { capture: true });
     
-    // Detect visibility change (e.g., switching to screenshot tool)
+    // Detect window focus changes
     document.addEventListener('visibilitychange', function() {
       if (document.hidden && !isScreenshotAllowed) {
-        setTimeout(showScreenshotOverlay, 100);
-      }
-    });
-    
-    // Prevent copy-paste
-    document.addEventListener('copy', function(e) {
-      if (!isScreenshotAllowed) {
-        e.preventDefault();
         showScreenshotOverlay();
       }
     });
+    
+    // Block copy, cut, paste
+    ['copy', 'cut', 'paste'].forEach(event => {
+      document.addEventListener(event, function(e) {
+        if (!isScreenshotAllowed) {
+          e.preventDefault();
+          e.stopPropagation();
+          showScreenshotOverlay();
+        }
+      }, { capture: true });
+    });
+    
+    // Block drag and drop
+    document.addEventListener('dragstart', function(e) {
+      if (!isScreenshotAllowed) {
+        e.preventDefault();
+        e.stopPropagation();
+        showScreenshotOverlay();
+      }
+    }, { capture: true });
     
     // Audio Management
     const audio = document.getElementById('birthdayMusic');
@@ -1635,17 +1653,19 @@
     let isPlaying = false;
     
     function playAudio() {
-      audio.play().then(() => {
-        isPlaying = true;
-        musicIcon.classList.remove('fa-music');
-        musicIcon.classList.add('fa-pause');
-      }).catch(e => {
-        console.log("Audio play failed:", e);
-        document.addEventListener('click', function initAudio() {
-          playAudio();
-          document.removeEventListener('click', initAudio);
-        }, { once: true });
-      });
+      if (isScreenshotAllowed) {
+        audio.play().then(() => {
+          isPlaying = true;
+          musicIcon.classList.remove('fa-music');
+          musicIcon.classList.add('fa-pause');
+        }).catch(e => {
+          console.log("Audio play failed:", e);
+          document.addEventListener('click', function initAudio() {
+            playAudio();
+            document.removeEventListener('click', initAudio);
+          }, { once: true });
+        });
+      }
     }
     
     function pauseAudio() {
@@ -1656,6 +1676,10 @@
     }
     
     musicToggle.addEventListener('click', function() {
+      if (!isScreenshotAllowed) {
+        showScreenshotOverlay();
+        return;
+      }
       if (isPlaying) {
         pauseAudio();
       } else {
@@ -1669,7 +1693,9 @@
     });
     
     window.addEventListener('load', function() {
-      playAudio();
+      if (isScreenshotAllowed) {
+        playAudio();
+      }
     });
     
     // Video Controls
@@ -1678,6 +1704,10 @@
     let videoPlaying = false;
     
     playBtn.addEventListener('click', function() {
+      if (!isScreenshotAllowed) {
+        showScreenshotOverlay();
+        return;
+      }
       if (videoPlaying) {
         video.pause();
         playBtn.innerHTML = '<i class="fas fa-play"></i>';
@@ -1692,68 +1722,77 @@
     });
     
     // Cake Interaction
-    document.addEventListener('DOMContentLoaded', function() {
-      const cake = document.getElementById('birthdayCake');
-      const flames = document.querySelectorAll('.flame');
-      let candlesLit = true;
-      
-      cake.addEventListener('click', function() {
-        if (candlesLit) {
-          flames.forEach(flame => {
-            flame.style.animation = 'none';
-            flame.style.opacity = '0';
-          });
-          createConfetti();
-          createHearts();
-          candlesLit = false;
-          
-          setTimeout(() => {
-            alert('Happy Birthday Muskan! May all your wishes come true! 🎉');
-          }, 1000);
-        } else {
-          flames.forEach(flame => {
-            flame.style.animation = 'ficker 1s infinite alternate';
-            flame.style.opacity = '1';
-          });
-          candlesLit = true;
-        }
-      });
-      
-      // Gift Box Interaction
-      const giftBox = document.getElementById('giftBox');
-      const giftMessage = document.getElementById('giftMessage');
-      const popup = document.getElementById('popup');
-      
-      function openGift() {
-        if (!isScreenshotAllowed) {
-          showScreenshotOverlay();
-          return;
-        }
-        popup.style.display = "flex";
+    const cake = document.getElementById('birthdayCake');
+    const flames = document.querySelectorAll('.flame');
+    let candlesLit = true;
+    
+    cake.addEventListener('click', function() {
+      if (!isScreenshotAllowed) {
+        showScreenshotOverlay();
+        return;
       }
-      
-      function closePopup() {
-        popup.style.display = "none";
-      }
-      
-      popup.addEventListener("click", function(e) {
-        if (e.target === popup) {
-          closePopup();
-        }
-      });
-      
-      giftBox.addEventListener('click', function() {
-        this.style.transform = 'scale(0.9)';
+      if (candlesLit) {
+        flames.forEach(flame => {
+          flame.style.animation = 'none';
+          flame.style.opacity = '0';
+        });
+        createConfetti();
+        createHearts();
+        candlesLit = false;
         setTimeout(() => {
-          this.style.transform = 'scale(1)';
-          createConfetti();
-          createHearts();
-          openGift();
-        }, 300);
-      });
-      
-      giftMessage.addEventListener('click', openGift);
+          alert('Happy Birthday Muskan! May all your wishes come true! 🎉');
+        }, 1000);
+      } else {
+        flames.forEach(flame => {
+          flame.style.animation = 'ficker 1s infinite alternate';
+          flame.style.opacity = '1';
+        });
+        candlesLit = true;
+      }
     });
+    
+    // Gift Box Interaction
+    const giftBox = document.getElementById('giftBox');
+    const giftMessage = document.getElementById('giftMessage');
+    const popup = document.getElementById('popup');
+    
+    function openGift() {
+      if (!isScreenshotAllowed) {
+        showScreenshotOverlay();
+        return;
+      }
+      popup.style.display = 'flex';
+    }
+    
+    function closePopup() {
+      if (!isScreenshotAllowed) {
+        showScreenshotOverlay();
+        return;
+      }
+      popup.style.display = 'none';
+    }
+    
+    popup.addEventListener('click', function(e) {
+      if (e.target === popup) {
+        closePopup();
+      }
+    });
+    
+    giftBox.addEventListener('click', function() {
+      if (!isScreenshotAllowed) {
+        showScreenshotOverlay();
+        return;
+      }
+      this.style.transform = 'scale(0.9)';
+      setTimeout(() => {
+        this.style.transform = 'scale(1)';
+        createConfetti();
+        createHearts();
+        openGift();
+      }, 300);
+    });
+    
+    giftMessage.addEventListener('click', openGift);
     
     // Gallery Modal
     function openModal(src) {
@@ -1763,48 +1802,60 @@
       }
       const modal = document.getElementById('imageModal');
       const modalImg = document.getElementById('modalImage');
-      modal.style.display = "block";
+      modal.style.display = 'block';
       modalImg.src = src;
     }
     
     function closeModal() {
-      document.getElementById('imageModal').style.display = "none";
+      if (!isScreenshotAllowed) {
+        showScreenshotOverlay();
+        return;
+      }
+      document.getElementById('imageModal').style.display = 'none';
     }
     
     function closeGiftModal() {
-      document.getElementById('giftModal').style.display = "none";
+      if (!isScreenshotAllowed) {
+        showScreenshotOverlay();
+        return;
+      }
+      document.getElementById('giftModal').style.display = 'none';
     }
     
     window.onclick = function(event) {
       const modal = document.getElementById('imageModal');
       const giftModal = document.getElementById('giftModal');
-      
       if (event.target == modal) {
         closeModal();
       }
-      
       if (event.target == giftModal) {
         closeGiftModal();
       }
     };
     
     function showGallery() {
+      if (!isScreenshotAllowed) {
+        showScreenshotOverlay();
+        return;
+      }
       const gallery = document.getElementById('gallery');
       gallery.classList.add('show');
       createConfetti();
       createHearts();
       document.querySelector('.gallery-btn').style.display = 'none';
-      
       setTimeout(() => {
         document.getElementById('surpriseMessage').classList.add('show');
       }, 1500);
-      
       document.querySelectorAll('.gallery-item img').forEach(img => {
         img.addEventListener('click', () => openModal(img.src));
       });
     }
     
     function createConfetti() {
+      if (!isScreenshotAllowed) {
+        showScreenshotOverlay();
+        return;
+      }
       const colors = ['#ff6b8b', '#4ecdc4', '#ffe66d', '#ff9ff3', '#feca57', '#5f27cd', '#FFD700'];
       for (let i = 0; i < 150; i++) {
         const confetti = document.createElement('div');
@@ -1834,6 +1885,10 @@
     }
     
     function createHearts() {
+      if (!isScreenshotAllowed) {
+        showScreenshotOverlay();
+        return;
+      }
       const heartEmojis = ['❤️', '💖', '💗', '💓', '💞', '💕', '🎂', '🎉', '✨', '🎁', '🌟'];
       for (let i = 0; i < 40; i++) {
         setTimeout(() => {
@@ -1858,6 +1913,10 @@
     }
     
     function addContinuousDecorations() {
+      if (!isScreenshotAllowed) {
+        showScreenshotOverlay();
+        return;
+      }
       setInterval(() => {
         const balloon = document.createElement('div');
         balloon.className = 'decoration balloon';
@@ -1891,7 +1950,9 @@
       }, 2500);
     }
     
-    addContinuousDecorations();
+    if (isScreenshotAllowed) {
+      addContinuousDecorations();
+    }
     
     // Allow password input via Enter key
     document.getElementById('screenshotPassword').addEventListener('keypress', function(e) {
