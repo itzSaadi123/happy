@@ -98,6 +98,11 @@
       z-index: 5;
       transition: all 0.3s;
       box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      opacity: 0; /* Initially hidden */
+    }
+    
+    .play-btn.show {
+      opacity: 1;
     }
     
     .play-btn i {
@@ -976,7 +981,7 @@
 </head>
 <body>
   <!-- Hidden Audio for Birthday Music -->
-  <audio id="birthdayMusic" loop>
+  <audio id="birthdayMusic" loop preload="auto">
     <source src="bi.mp3" type="audio/mpeg">
   </audio>
   
@@ -1001,7 +1006,7 @@
     <!-- Video Section -->
     <div class="video-container">
       <div class="video-wrapper">
-        <video id="birthdayVideo" poster="https://i.imgur.com/J9LFQYH.jpg" autoplay muted playsinline>
+        <video id="birthdayVideo" preload="auto">
           <source src="birthday_video.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
@@ -1073,52 +1078,53 @@
       <div class="emoji">😂</div>
     </div>
     
- <!-- Timeline -->
-<h2>Our Friendship Journey</h2>
-<div class="timeline">
-  <div class="timeline-item left">
-    <div class="timeline-content">
-      <span class="timeline-date">2019</span>
-      <p>We first met in college, not knowing that this bond would last for years 🤍</p>
+    <!-- Timeline -->
+    <h2>Our Friendship Journey</h2>
+    <div class="timeline">
+      <div class="timeline-item left">
+        <div class="timeline-content">
+          <span class="timeline-date">2019</span>
+          <p>We first met in college, not knowing that this bond would last for years 🤍</p>
+        </div>
+      </div>
+      <div class="timeline-item right">
+        <div class="timeline-content">
+          <span class="timeline-date">2020</span>
+          <p>From random talks in class to sharing laughter, slowly our friendship grew stronger ✨</p>
+        </div>
+      </div>
+      <div class="timeline-item left">
+        <div class="timeline-content">
+          <span class="timeline-date">2021</span>
+          <p>Even with busy schedules, we always found time to stay connected 🫶</p>
+        </div>
+      </div>
+      <div class="timeline-item right">
+        <div class="timeline-content">
+          <span class="timeline-date">2022</span>
+          <p>Every little moment turned into a memory—our chats, jokes, and endless support 💕</p>
+        </div>
+      </div>
+      <div class="timeline-item left">
+        <div class="timeline-content">
+          <span class="timeline-date">2023</span>
+          <p>Through ups and downs, our bond only became stronger 🌸</p>
+        </div>
+      </div>
+      <div class="timeline-item right">
+        <div class="timeline-content">
+          <span class="timeline-date">2024</span>
+          <p>Another year of togetherness, laughter, and pure friendship 🤍</p>
+        </div>
+      </div>
+      <div class="timeline-item left">
+        <div class="timeline-content">
+          <span class="timeline-date">2025</span>
+          <p>Here we are today—still standing side by side, with countless more memories to come ✨</p>
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="timeline-item right">
-    <div class="timeline-content">
-      <span class="timeline-date">2020</span>
-      <p>From random talks in class to sharing laughter, slowly our friendship grew stronger ✨</p>
-    </div>
-  </div>
-  <div class="timeline-item left">
-    <div class="timeline-content">
-      <span class="timeline-date">2021</span>
-      <p>Even with busy schedules, we always found time to stay connected 🫶</p>
-    </div>
-  </div>
-  <div class="timeline-item right">
-    <div class="timeline-content">
-      <span class="timeline-date">2022</span>
-      <p>Every little moment turned into a memory—our chats, jokes, and endless support 💕</p>
-    </div>
-  </div>
-  <div class="timeline-item left">
-    <div class="timeline-content">
-      <span class="timeline-date">2023</span>
-      <p>Through ups and downs, our bond only became stronger 🌸</p>
-    </div>
-  </div>
-  <div class="timeline-item right">
-    <div class="timeline-content">
-      <span class="timeline-date">2024</span>
-      <p>Another year of togetherness, laughter, and pure friendship 🤍</p>
-    </div>
-  </div>
-  <div class="timeline-item left">
-    <div class="timeline-content">
-      <span class="timeline-date">2025</span>
-      <p>Here we are today—still standing side by side, with countless more memories to come ✨</p>
-    </div>
-  </div>
-</div> 
+    
     <!-- Surprise Message -->
     <div class="surprise-message" id="surpriseMessage">
       <h3>you're not just my friend, you're my sister from another mother! 💖</h3>
@@ -1375,7 +1381,7 @@
     const audio = document.getElementById('birthdayMusic');
     const musicToggle = document.getElementById('musicToggle');
     const musicIcon = document.getElementById('musicIcon');
-    let isPlaying = false;
+    let isPlaying = true; // Start with music playing
     
     function playAudio() {
       audio.play().then(() => {
@@ -1384,8 +1390,13 @@
         musicIcon.classList.add('fa-pause');
       }).catch(e => {
         console.log("Audio play failed:", e);
+        // Try to play on first user interaction
         document.addEventListener('click', function initAudio() {
-          playAudio();
+          audio.play().then(() => {
+            isPlaying = true;
+            musicIcon.classList.remove('fa-music');
+            musicIcon.classList.add('fa-pause');
+          });
           document.removeEventListener('click', initAudio);
         }, { once: true });
       });
@@ -1411,16 +1422,45 @@
       playAudio();
     });
     
+    // Start music automatically on page load
     window.addEventListener('load', function() {
       playAudio();
+      // Restore scroll position
+      const scrollPosition = sessionStorage.getItem('scrollPosition');
+      if (scrollPosition) {
+        window.scrollTo(0, parseInt(scrollPosition));
+      }
+    });
+    
+    // Save scroll position before page unloads
+    window.addEventListener('beforeunload', function() {
+      sessionStorage.setItem('scrollPosition', window.scrollY);
     });
     
     // Video Controls
     const video = document.getElementById('birthdayVideo');
     const playBtn = document.getElementById('playBtn');
-    let videoPlaying = false;
+    let videoPlaying = true; // Video starts playing automatically
     
-    playBtn.addEventListener('click', function() {
+    // Show play/pause button only on click
+    video.addEventListener('click', function() {
+      playBtn.classList.add('show');
+      if (videoPlaying) {
+        video.pause();
+        playBtn.innerHTML = '<i class="fas fa-play"></i>';
+      } else {
+        video.play();
+        playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+      }
+      videoPlaying = !videoPlaying;
+      // Hide button after 3 seconds
+      setTimeout(() => {
+        playBtn.classList.remove('show');
+      }, 3000);
+    });
+    
+    playBtn.addEventListener('click', function(e) {
+      e.stopPropagation(); // Prevent video click event from firing
       if (videoPlaying) {
         video.pause();
         playBtn.innerHTML = '<i class="fas fa-play"></i>';
@@ -1432,6 +1472,16 @@
         }
       }
       videoPlaying = !videoPlaying;
+      // Hide button after 3 seconds
+      setTimeout(() => {
+        playBtn.classList.remove('show');
+      }, 3000);
+    });
+    
+    // Preload video
+    video.addEventListener('loadeddata', function() {
+      video.play();
+      videoPlaying = true;
     });
     
     // Gallery Modal with Navigation
@@ -1610,7 +1660,7 @@
         }, 1000);
       } else {
         flames.forEach(flame => {
-          flame.style.animation = 'flicker 1s infinite alternate';
+          flame.style.animation = 'ficker 1s infinite alternate';
           flame.style.opacity = '1';
         });
         candlesLit = true;
