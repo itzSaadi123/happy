@@ -1006,7 +1006,7 @@
     <!-- Video Section -->
     <div class="video-container">
       <div class="video-wrapper">
-        <video id="birthdayVideo" preload="auto" muted>
+        <video id="birthdayVideo" preload="auto" muted loop>
           <source src="birthday1_video.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
@@ -1130,32 +1130,33 @@
       <h3>you're not just my friend, you're my sister from another mother! 💖</h3>
     </div>
     
-  <!-- Wishes -->
-<div class="wishes-container">
-  <h2>Special Wishes For You🌸</h2>
-  <div class="wishes-grid">
-    <div class="wish-card">
-      <div class="wish-icon">🎂</div>
-      <p>Happy Birthday to the girl who spreads smiles just with her presence — may your day be as sweet as you are! 💕</p>
+    <!-- Wishes -->
+    <div class="wishes-container">
+      <h2>Special Wishes For You🌸</h2>
+      <div class="wishes-grid">
+        <div class="wish-card">
+          <div class="wish-icon">🎂</div>
+          <p>Happy Birthday to the girl who spreads smiles just with her presence — may your day be as sweet as you are! 💕</p>
+        </div>
+        <div class="wish-card">
+          <div class="wish-icon">✨</div>
+          <p>May this year bring endless opportunities, shining moments, and all the success your heart desires 🌟</p>
+        </div>
+        <div class="wish-card">
+          <div class="wish-icon">❤️</div>
+          <p>You deserve all the love, laughter, and peace in the world — always stay the beautiful soul you are 🤍</p>
+        </div>
+        <div class="wish-card">
+          <div class="wish-icon">🎉</div>
+          <p>Cheers to more inside jokes, late-night talks, and unforgettable memories we’ll keep adding every year 🫶</p>
+        </div>
+        <div class="wish-card">
+          <div class="wish-icon">🌸</div>
+          <p>No matter where life takes us, I’ll always be thankful for having a friend like you in my journey 💫</p>
+        </div>
+      </div>
     </div>
-    <div class="wish-card">
-      <div class="wish-icon">✨</div>
-      <p>May this year bring endless opportunities, shining moments, and all the success your heart desires 🌟</p>
-    </div>
-    <div class="wish-card">
-      <div class="wish-icon">❤️</div>
-      <p>You deserve all the love, laughter, and peace in the world — always stay the beautiful soul you are 🤍</p>
-    </div>
-    <div class="wish-card">
-      <div class="wish-icon">🎉</div>
-      <p>Cheers to more inside jokes, late-night talks, and unforgettable memories we’ll keep adding every year 🫶</p>
-    </div>
-    <div class="wish-card">
-      <div class="wish-icon">🌸</div>
-      <p>No matter where life takes us, I’ll always be thankful for having a friend like you in my journey 💫</p>
-    </div>
-  </div>
-</div>
+    
     <!-- Gallery Button -->
     <div class="gallery-container">
       <button class="gallery-btn" onclick="showGallery()">Click to View Our Beautiful Memories Together! 📸</button>
@@ -1481,7 +1482,7 @@
       }, 3000);
     });
     
-    // Preload video
+    // Preload video and start playing
     video.addEventListener('loadeddata', function() {
       video.play();
       videoPlaying = true;
@@ -1684,7 +1685,7 @@
         }, 1000);
       } else {
         flames.forEach(flame => {
-          flame.style.animation = 'ficker 1s infinite alternate';
+          flame.style.animation = 'flicker 1s infinite alternate';
           flame.style.opacity = '1';
         });
         candlesLit = true;
