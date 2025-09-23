@@ -1051,7 +1051,7 @@
         🎂 <strong>Sabse pehle toh... Happy Birthday meri <span style="color:#b10a65">Drama Queen 👑</span>!</strong>
       </p>
       
-      <p style="font-size: 17px; margin: 8px 0;">📶 Tum wo dost ho jo mjy hamesha,hr wqt <em>free WiFi</em> ki tarah chahye hoti ho.</p>
+      <p style="font-size: 17px; margin: 8px 0;">📶 Tum wo dost ho jo mjy hamesha,hr wqt <em>WiFi</em> ki tarah chahye hoti ho.</p>
       
       <p style="font-size: 17px; margin: 8px 0;">✨ Tum meri zindagi ka haseen hissa ho.💖.</p>
       
@@ -1064,20 +1064,8 @@
         You have always had my back and I couldn't imagine my life without you 😭❤️
         I love how you care, how protective you're, your possessiveness is a sign of how deeply you value me regardless of my flaws and mess, I wouldn't want it any other way 😭🧿❤️
         On this day I wanted to remind you that you deserve the world and more ❤️
-        *Loveyouutthemostttt 💘*
+            Loveyouutthemostttt 💘
       </p>
-    </div>
-    
-    <!-- Birthday Cake -->
-    <div class="cake-container">
-      <div class="cake" id="birthdayCake">
-        <div class="candle"><div class="flame"></div></div>
-        <div class="candle"><div class="flame"></div></div>
-        <div class="candle"><div class="flame"></div></div>
-        <div class="candle"><div class="flame"></div></div>
-        <div class="candle"><div class="flame"></div></div>
-      </div>
-      <p class="cake-message">Make a wish and blow out the candles! 🎂</p>
     </div>
     
     <!-- Gift Box -->
@@ -1156,7 +1144,6 @@
     
     <!-- Wishes -->
     <div class="wishes-container">
-      <h2>Special Wishes For You🌸</h2>
       <div class="wishes-grid">
         <div class="wish-card">
           <div class="wish-icon">🎂</div>
@@ -1383,6 +1370,18 @@
       <div class="gallery-item">
         <img src="img65.jpg" alt="Image 65">
       </div>
+    </div>
+    
+    <!-- Birthday Cake - MOVED TO BOTTOM -->
+    <div class="cake-container">
+      <div class="cake" id="birthdayCake">
+        <div class="candle"><div class="flame"></div></div>
+        <div class="candle"><div class="flame"></div></div>
+        <div class="candle"><div class="flame"></div></div>
+        <div class="candle"><div class="flame"></div></div>
+        <div class="candle"><div class="flame"></div></div>
+      </div>
+     
     </div>
     
     <!-- Modal -->
@@ -1707,29 +1706,6 @@
       }
     }
     
-    // Birthday Cake Interaction
-    document.getElementById('birthdayCake').addEventListener('click', function() {
-      const flames = document.querySelectorAll('.flame');
-      let candlesLit = true;
-      if (candlesLit) {
-        flames.forEach(flame => {
-          flame.style.animation = 'none';
-          flame.style.opacity = '0';
-        });
-        createConfetti();
-        createHearts();
-        candlesLit = false;
-        setTimeout(() => {
-          alert('Happy Birthday Muskan! May all your wishes come true! 🎉');
-        }, 1000);
-      } else {
-        flames.forEach(flame => {
-          flame.style.animation = 'flicker 1s infinite alternate';
-          flame.style.opacity = '1';
-        });
-        candlesLit = true;
-      }
-    });
     
     // Continuous Decorations
     function addContinuousDecorations() {
