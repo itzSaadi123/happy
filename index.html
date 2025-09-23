@@ -33,7 +33,7 @@
       overflow-x: hidden;
       min-height: 100vh;
       position: relative;
-      transition: overflow 0.3s ease; /* Added transition for smooth effect */
+      transition: overflow 0.3s ease;
     }
     
     /* Added class to prevent body scroll when modal is open */
@@ -621,9 +621,10 @@
       margin-top: 50px;
       border-radius: 10px;
       box-shadow: 0 0 30px rgba(255,255,255,0.2);
+      position: relative;
     }
     
-    .close {
+    .modal-close {
       position: absolute;
       top: 20px;
       right: 30px;
@@ -632,11 +633,20 @@
       font-weight: bold;
       cursor: pointer;
       transition: all 0.3s;
+      z-index: 1001;
+      background: rgba(0,0,0,0.5);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
-    .close:hover {
+    .modal-close:hover {
       transform: rotate(90deg);
       color: var(--primary);
+      background: rgba(255,255,255,0.9);
     }
     
     /* Gift Box */
@@ -913,6 +923,14 @@
       .music-controls {
         bottom: 80px;
       }
+      
+      .modal-close {
+        top: 10px;
+        right: 10px;
+        font-size: 30px;
+        width: 40px;
+        height: 40px;
+      }
     }
     
     /* Popup Styles */
@@ -948,7 +966,7 @@
       border-radius: 12px;
     }
     
-    .close {
+    .popup-close {
       position: absolute;
       top: -10px;
       right: -10px;
@@ -1073,7 +1091,7 @@
     <!-- Popup Modal -->
     <div class="popup" id="popup">
       <div class="popup-content">
-        <span class="close" onclick="closePopup()">&times;</span>
+        <span class="popup-close" onclick="closePopup()">&times;</span>
         <img src="myimg.jpg" alt="Gift">
       </div>
       <!-- Emojis floating in background -->
@@ -1369,13 +1387,13 @@
     
     <!-- Modal -->
     <div id="imageModal" class="modal">
-      <span class="close" onclick="closeModal()">&times;</span>
+      <span class="modal-close" onclick="closeModal()">&times;</span>
       <img class="modal-content" id="modalImage">
     </div>
     
     <!-- Gift Modal -->
     <div id="giftModal" class="gift-modal">
-      <span class="close" onclick="closeGiftModal()">&times;</span>
+      <span class="modal-close" onclick="closeGiftModal()">&times;</span>
       <img class="gift-modal-content" id="giftModalImage" src="img2.jpg" alt="Special Gift">
       <div class="gift-caption">For my dearest friend Muskan! May our friendship grow stronger with each passing year! 💖</div>
     </div>
