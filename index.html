@@ -852,6 +852,39 @@
       font-size: 24px;
     }
     
+    /* Mobile Navigation Arrows */
+    .modal-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      font-size: 2rem;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 1002;
+      transition: all 0.3s;
+    }
+    
+    .modal-nav:hover {
+      background: rgba(0,0,0,0.8);
+      transform: translateY(-50%) scale(1.1);
+    }
+    
+    .modal-nav.prev {
+      left: 20px;
+    }
+    
+    .modal-nav.next {
+      right: 20px;
+    }
+    
     /* Responsive */
     @media (max-width: 768px) {
       h1 {
@@ -930,6 +963,21 @@
         font-size: 30px;
         width: 40px;
         height: 40px;
+      }
+      
+      /* Mobile-specific navigation arrows */
+      .modal-nav {
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+      }
+      
+      .modal-nav.prev {
+        left: 10px;
+      }
+      
+      .modal-nav.next {
+        right: 10px;
       }
     }
     
@@ -1031,7 +1079,7 @@
     <div class="video-container">
       <div class="video-wrapper">
         <video id="birthdayVideo" preload="auto" muted loop>
-          <source src="birthday_video.mp4" type="video/mp4">
+          <source src="mine.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
         <div class="play-btn" id="playBtn">
@@ -1073,7 +1121,7 @@
       <div class="gift-box" id="giftBox">
         <div class="gift-ribbon"></div>
       </div>
-      <p class="gift-message" id="giftMessage">Click to open your gift! 🎁</p>
+      <p class="gift-message" id="giftMessage">Click to Unwrap Your Gift! 🎁</p>
     </div>
     
     <!-- Popup Modal -->
@@ -1144,6 +1192,7 @@
     
     <!-- Wishes -->
     <div class="wishes-container">
+       <h2>Wishes From My Heart❤️</h2>
       <div class="wishes-grid">
         <div class="wish-card">
           <div class="wish-icon">🎂</div>
@@ -1170,7 +1219,7 @@
     
     <!-- Gallery Button -->
     <div class="gallery-container">
-      <button class="gallery-btn" onclick="showGallery()">Click to View Our Beautiful Memories Together! 📸</button>
+      <button class="gallery-btn" onclick="showGallery()">Relive Our Precious Moments! 📸</button>
     </div>
     
     <!-- Gallery -->
@@ -1387,6 +1436,8 @@
     <!-- Modal -->
     <div id="imageModal" class="modal">
       <span class="modal-close" onclick="closeModal()">&times;</span>
+      <button class="modal-nav prev" onclick="showPreviousImage()">❮</button>
+      <button class="modal-nav next" onclick="showNextImage()">❯</button>
       <img class="modal-content" id="modalImage">
     </div>
     
